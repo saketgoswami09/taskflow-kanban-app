@@ -1,12 +1,7 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// backend/prisma/schema.prisma
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -14,7 +9,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// This is our User model
+// USER MODEL (already exists)
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
@@ -22,4 +17,52 @@ model User {
   password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // RELATION: A user can have many boards
+  boards    Board[]
+}
+
+// NEW BOARD MODEL
+model Board {
+  id        String   @id @default(cuid())
+  title     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // RELATION: This board belongs to a user
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // RELATION: A board can have many lists
+  lists     List[]
+}
+
+// NEW LIST MODEL
+model List {
+  id        String   @id @default(cuid())
+  title     String
+  order     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // RELATION: This list belongs to a board
+  boardId   String
+  board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+
+  // RELATION: A list can have many cards
+  cards     Card[]
+}
+
+// NEW CARD MODEL
+model Card {
+  id          String   @id @default(cuid())
+  title       String
+  order       Int
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // RELATION: This card belongs to a list
+  listId      String
+  list        List     @relation(fields: [listId], references: [id], onDelete: Cascade)
 }
